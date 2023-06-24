@@ -74,7 +74,7 @@ class BatteryReceiver : BroadcastReceiver() {
                         threshold
                     )
                 )
-                .setSmallIcon(R.drawable.foreground)
+                .setSmallIcon(R.drawable.monochrome)
                 .build()
 
             val notificationManager =
@@ -95,7 +95,7 @@ class BatteryReceiver : BroadcastReceiver() {
                             threshold
                         )
                     )
-                    .setSmallIcon(R.drawable.foreground)
+                    .setSmallIcon(R.drawable.monochrome)
                     .build()
 
                 notificationManager.notify(R.id.notification, serviceNotification)
@@ -142,7 +142,7 @@ class BatteryReceiver : BroadcastReceiver() {
                     threshold
                 )
             )
-            .setSmallIcon(R.drawable.foreground)
+            .setSmallIcon(R.drawable.monochrome)
             .build()
 
         val notificationManager =

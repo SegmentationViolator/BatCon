@@ -51,7 +51,7 @@ class BatteryMonitor : Service() {
             .setContentIntent(pendingIntent)
             .setContentTitle(resources.getString(R.string.service_title))
             .setContentText(resources.getString(R.string.threshold_description, threshold))
-            .setSmallIcon(R.drawable.foreground)
+            .setSmallIcon(R.drawable.monochrome)
             .build()
 
         startForeground(R.id.notification, notification)
