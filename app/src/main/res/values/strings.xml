@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name" translatable="false">BatCon</string>
+    <string name="notification_action">DISMISS</string>
+    <string name="notification_channel">Default</string>
+    <string name="notification_description">Your battery has reached %d%%</string>
+    <string name="notification_title">Threshold Reached</string>
+    <string name="service_name">Battery Monitor</string>
+    <string name="service_title">"Monitoring Your Battery"</string>
+    <string name="sound">Default</string>
+    <string name="sound_label">Notification Sound</string>
+    <string name="start_button_description">start</string>
+    <string name="stop_button_description">stop</string>
+    <string name="threshold_label">Threshold %d%%</string>
+    <string name="threshold_description">You will be notified when your battery reaches %d%%</string>
+</resources>
