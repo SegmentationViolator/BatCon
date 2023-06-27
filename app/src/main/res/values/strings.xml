@@ -1,5 +1,14 @@
 <resources>
     <string name="app_name" translatable="false">BatCon</string>
+    <string name="information_button_description">information</string>
+    <string name="popup_text">
+BatCon will notify you when the battery reaches the selected threshold by playing the selected notification sound (set to your phone\'s ringtone by default)
+\n\n
+BatCon only starts monitoring your battery after you connect your device to power, it is necessary for BatCon\'s service to be already running before connecting the device to power or else it won\'t monitor your battery
+\n\n
+<b>NOTE: It is recommended that you turn off battery optimizations for BatCon</b>
+    </string>
+    <string name="popup_links"><a href="https://github.com/SegmentationViolator/BatCon/issues">Report a Bug</a> | <a href="https://github.com/SegmentationViolator/BatCon">Source Code</a></string>
     <string name="notification_action">DISMISS</string>
     <string name="notification_channel">Default</string>
     <string name="notification_description">Your battery has reached %d%%</string>
@@ -12,4 +21,5 @@
     <string name="stop_button_description">stop</string>
     <string name="threshold_label">Threshold %d%%</string>
     <string name="threshold_description">You will be notified when your battery reaches %d%%</string>
+    <string name="dismiss_button_description">dismiss popup</string>
 </resources>

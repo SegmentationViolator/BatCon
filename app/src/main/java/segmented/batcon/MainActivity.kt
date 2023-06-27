@@ -4,8 +4,15 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.text.method.LinkMovementMethod
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.PopupWindow
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
@@ -16,6 +23,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
     private lateinit var openDocument: ActivityResultLauncher<Array<String>>
+    private lateinit var onSharedPreferenceChangeListener: OnSharedPreferenceChangeListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
         val preferences = getSharedPreferences("config", Context.MODE_PRIVATE)
 
+        val informationButton = findViewById<ImageButton>(R.id.information_button)
         val soundSelector = findViewById<TextView>(R.id.sound_selector)
         val startButton = findViewById<FloatingActionButton>(R.id.start_button)
         val stopButton = findViewById<FloatingActionButton>(R.id.stop_button)
@@ -39,17 +48,7 @@ class MainActivity : AppCompatActivity() {
             )
         )
 
-        startService(Intent(applicationContext, BatteryMonitor::class.java))
-
-        preferences.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
-            if (key == "service-enabled") {
-                startButton.isVisible =
-                    !sharedPreferences.getBoolean("service-enabled", false).also {
-                        stopButton.isVisible = it
-                        thresholdBar.isEnabled = !it
-                    }
-            }
-        }
+        val layoutInflater = getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         openDocument = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
             if (uri == null) return@registerForActivityResult
@@ -78,32 +77,54 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        onSharedPreferenceChangeListener =
+            OnSharedPreferenceChangeListener { sharedPreferences, key ->
+                if (key == "service-enabled") {
+                    startButton.isVisible =
+                        !sharedPreferences.getBoolean("service-enabled", false)
+                            .also { isServiceEnabled ->
+                                stopButton.isVisible = isServiceEnabled
+                                thresholdBar.isEnabled = !isServiceEnabled
+                                soundSelector.isClickable = !isServiceEnabled
+                            }
+                }
+            }
+
+        informationButton.setOnClickListener { view ->
+            val popupView = layoutInflater.inflate(R.layout.popup, null)
+            val popupLinks = popupView.findViewById<TextView>(R.id.popup_links)
+
+            popupLinks.movementMethod = LinkMovementMethod.getInstance()
+
+            val popupWindow = PopupWindow(
+                popupView,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                true
+            )
+
+            popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+            popupView.findViewById<ImageButton>(R.id.dismiss_button).setOnClickListener {
+                popupWindow.dismiss()
+            }
+        }
+
         soundSelector.setOnClickListener {
             openDocument.launch(arrayOf("audio/*"))
         }
 
         startButton.setOnClickListener {
-            startButton.isVisible = false
-            stopButton.isVisible = true
-            soundSelector.isClickable = false
-            thresholdBar.isEnabled = false
-
             preferences.edit()
                 .putBoolean("service-enabled", true)
                 .apply()
 
             startForegroundService(
                 Intent(applicationContext, BatteryMonitor::class.java)
-                    .setAction(BatteryMonitor.ACTION_START)
             )
         }
 
         stopButton.setOnClickListener {
-            startButton.isVisible = true
-            stopButton.isVisible = false
-            soundSelector.isClickable = true
-            thresholdBar.isEnabled = true
-
             preferences.edit()
                 .putBoolean("service-enabled", false)
                 .apply()
@@ -136,9 +157,10 @@ class MainActivity : AppCompatActivity() {
         soundSelector.text =
             preferences.getString("sound-name", resources.getString(R.string.sound))
         startButton.isVisible =
-            !preferences.getBoolean("service-enabled", false).also {
-                stopButton.isVisible = it
-                thresholdBar.isEnabled = !it
+            !preferences.getBoolean("service-enabled", false).also { isServiceEnabled ->
+                stopButton.isVisible = isServiceEnabled
+                thresholdBar.isEnabled = !isServiceEnabled
+                soundSelector.isEnabled = !isServiceEnabled
             }
         thresholdBar.progress =
             preferences.getInt("threshold", resources.getInteger(R.integer.threshold))
@@ -147,5 +169,19 @@ class MainActivity : AppCompatActivity() {
                         resources.getString(R.string.threshold_description, progress)
                     thresholdLabel.text = resources.getString(R.string.threshold_label, progress)
                 }
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        val preferences = getSharedPreferences("config", Context.MODE_PRIVATE)
+        preferences.unregisterOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val preferences = getSharedPreferences("config", Context.MODE_PRIVATE)
+        preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener)
     }
 }

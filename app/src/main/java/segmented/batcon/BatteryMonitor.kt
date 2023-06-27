@@ -9,10 +9,6 @@ import android.content.IntentFilter
 import android.os.IBinder
 
 class BatteryMonitor : Service() {
-    companion object {
-        const val ACTION_START = "start"
-    }
-
     private lateinit var powerReceiver: PowerReceiver
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -20,18 +16,11 @@ class BatteryMonitor : Service() {
         val threshold =
             preferences.getInt("threshold", resources.getInteger(R.integer.threshold))
 
-        val action = (intent ?: Intent().setAction(ACTION_START)).action
-
-        if (action != ACTION_START || !preferences.getBoolean(
+        if (!preferences.getBoolean(
                 "service-enabled",
                 false
             ) || this::powerReceiver.isInitialized
         ) {
-            if (action == null) {
-                preferences.edit()
-                    .putBoolean("service-enabled", this::powerReceiver.isInitialized)
-                    .apply()
-            }
             return START_NOT_STICKY
         }
 
@@ -71,6 +60,12 @@ class BatteryMonitor : Service() {
 
         powerReceiver.release()
         unregisterReceiver(powerReceiver)
+
+        val preferences = getSharedPreferences("config", Context.MODE_PRIVATE)
+
+        preferences.edit()
+            .putBoolean("service-enabled", false)
+            .apply()
     }
 
     override fun onBind(intent: Intent?): IBinder? {
